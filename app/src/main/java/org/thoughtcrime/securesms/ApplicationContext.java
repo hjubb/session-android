@@ -110,8 +110,11 @@ import java.util.Set;
 
 import dagger.ObjectGraph;
 import kotlin.Unit;
+import kotlinx.coroutines.CoroutineScope;
+import kotlinx.coroutines.CoroutineScopeKt;
 import network.loki.messenger.BuildConfig;
 
+import static kotlinx.coroutines.CoroutineScopeKt.MainScope;
 import static nl.komponents.kovenant.android.KovenantAndroid.startKovenant;
 import static nl.komponents.kovenant.android.KovenantAndroid.stopKovenant;
 
@@ -146,6 +149,7 @@ public class ApplicationContext extends MultiDexApplication implements Dependenc
   private PublicChatAPI publicChatAPI = null;
   public Broadcaster broadcaster = null;
   public SignalCommunicationModule communicationModule;
+  public CoroutineScope scope;
 
   private volatile boolean isAppVisible;
 
@@ -168,6 +172,7 @@ public class ApplicationContext extends MultiDexApplication implements Dependenc
     // ========
     messageNotifier = new OptimizedMessageNotifier(new DefaultMessageNotifier());
     broadcaster = new Broadcaster(this);
+    scope = MainScope();
     LokiAPIDatabase apiDB = DatabaseFactory.getLokiAPIDatabase(this);
     LokiThreadDatabase threadDB = DatabaseFactory.getLokiThreadDatabase(this);
     LokiUserDatabase userDB = DatabaseFactory.getLokiUserDatabase(this);
@@ -214,7 +219,7 @@ public class ApplicationContext extends MultiDexApplication implements Dependenc
     startPollingIfNeeded();
     publicChatManager.markAllAsNotCaughtUp();
     publicChatManager.startPollersIfNeeded();
-    MultiDeviceProtocol.syncConfigurationIfNeeded(this);
+    MultiDeviceProtocol.syncWithLifecycle(this, owner, false);
   }
 
   @Override
@@ -232,6 +237,7 @@ public class ApplicationContext extends MultiDexApplication implements Dependenc
   @Override
   public void onTerminate() {
     stopKovenant(); // Loki
+    CoroutineScopeKt.cancel(scope, null);
     super.onTerminate();
   }
 

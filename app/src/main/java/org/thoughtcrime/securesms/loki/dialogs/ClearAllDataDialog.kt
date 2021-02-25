@@ -28,6 +28,7 @@ class ClearAllDataDialog : DialogFragment() {
 
     private fun clearAllData() {
         if (KeyPairUtilities.hasV2KeyPair(requireContext())) {
+            // TODO: refactor this with loader
             MultiDeviceProtocol.forceSyncConfigurationNowIfNeeded(requireContext())
             ApplicationContext.getInstance(context).clearAllData(false)
         } else {

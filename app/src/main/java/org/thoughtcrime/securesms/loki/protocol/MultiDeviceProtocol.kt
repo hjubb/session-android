@@ -1,7 +1,11 @@
 package org.thoughtcrime.securesms.loki.protocol
 
 import android.content.Context
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.protobuf.ByteString
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 import org.session.libsession.messaging.MessagingConfiguration
 import org.session.libsession.messaging.messages.control.ConfigurationMessage
 import org.session.libsession.messaging.threads.Address
@@ -106,4 +110,16 @@ object MultiDeviceProtocol {
         // TODO: handle new configuration message fields or handle in new pipeline
         TextSecurePreferences.setConfigurationMessageSynced(context, true)
     }
+
+    @JvmStatic
+    fun syncWithLifecycle(context: Context, owner: LifecycleOwner, force: Boolean) {
+        owner.lifecycleScope.launch(IO) {
+            if (force) {
+                forceSyncConfigurationNowIfNeeded(context)
+            } else {
+                syncConfigurationIfNeeded(context)
+            }
+        }
+    }
+
 }

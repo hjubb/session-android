@@ -46,6 +46,8 @@ class DisplayNameActivity : BaseActionBarActivity() {
         }
         val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(displayNameEditText.windowToken, 0)
+        // TODO: replicate this in sync
+        TextSecurePreferences.setConfigurationMessageSynced(this, true)
         TextSecurePreferences.setProfileName(this, displayName)
         val intent = Intent(this, PNModeActivity::class.java)
         push(intent)

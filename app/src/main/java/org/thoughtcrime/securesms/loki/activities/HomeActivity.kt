@@ -21,36 +21,36 @@ import androidx.loader.content.Loader
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 import network.loki.messenger.R
+import org.session.libsession.utilities.GroupUtil
+import org.session.libsession.utilities.TextSecurePreferences
+import org.session.libsession.utilities.Util
+import org.session.libsignal.service.loki.utilities.mentions.MentionsManager
+import org.session.libsignal.service.loki.utilities.toHexString
+import org.session.libsignal.utilities.ThreadUtils
 import org.thoughtcrime.securesms.ApplicationContext
 import org.thoughtcrime.securesms.PassphraseRequiredActionBarActivity
 import org.thoughtcrime.securesms.conversation.ConversationActivity
-import org.session.libsession.utilities.GroupUtil
 import org.thoughtcrime.securesms.database.DatabaseFactory
 import org.thoughtcrime.securesms.database.model.ThreadRecord
+import org.thoughtcrime.securesms.loki.dialogs.*
+import org.thoughtcrime.securesms.loki.protocol.ClosedGroupsProtocolV2
+import org.thoughtcrime.securesms.loki.protocol.MultiDeviceProtocol
 import org.thoughtcrime.securesms.loki.utilities.*
 import org.thoughtcrime.securesms.loki.views.ConversationView
 import org.thoughtcrime.securesms.loki.views.NewConversationButtonSetViewDelegate
 import org.thoughtcrime.securesms.loki.views.SeedReminderViewDelegate
 import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.mms.GlideRequests
-import org.session.libsession.utilities.TextSecurePreferences
-import org.session.libsession.utilities.Util
-import org.session.libsignal.service.loki.utilities.mentions.MentionsManager
-import org.session.libsignal.utilities.ThreadUtils
-import org.session.libsignal.service.loki.utilities.toHexString
-import org.thoughtcrime.securesms.loki.dialogs.*
-import org.thoughtcrime.securesms.loki.protocol.ClosedGroupsProtocolV2
-import org.thoughtcrime.securesms.loki.protocol.MultiDeviceProtocol
 import java.io.IOException
 
 class HomeActivity : PassphraseRequiredActionBarActivity, ConversationClickListener, SeedReminderViewDelegate, NewConversationButtonSetViewDelegate {
 
     private lateinit var glide: GlideRequests
     private var broadcastReceiver: BroadcastReceiver? = null
+    private var syncJob: Job? = null
 
     private val publicKey: String
         get() {
@@ -150,21 +150,7 @@ class HomeActivity : PassphraseRequiredActionBarActivity, ConversationClickListe
         }
         this.broadcastReceiver = broadcastReceiver
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("blockedContactsChanged"))
-        if (intent.getBooleanExtra(PNModeActivity.REGISTRATION_SUCCESS, false)) {
-            // force the config sync here
-            MultiDeviceProtocol.forceSyncConfigurationNowIfNeeded(this)
-        }
     }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        if (intent == null) return
-        if (intent.getBooleanExtra(PNModeActivity.REGISTRATION_SUCCESS, false)) {
-            // force the config sync here
-            MultiDeviceProtocol.forceSyncConfigurationNowIfNeeded(this)
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         if (TextSecurePreferences.getLocalNumber(this) == null) { return; } // This can be the case after a secondary device is auto-cleared
@@ -176,6 +162,16 @@ class HomeActivity : PassphraseRequiredActionBarActivity, ConversationClickListe
         }
         showKeyPairMigrationSheetIfNeeded()
         showKeyPairMigrationSuccessSheetIfNeeded()
+        syncConfigIfNeeded()
+    }
+
+    private fun syncConfigIfNeeded() {
+        if (!TextSecurePreferences.getConfigurationMessageSynced(this)) return
+        val currentJob = syncJob
+        if (currentJob != null && currentJob.isActive) return
+        syncJob = ApplicationContext.getInstance(this).scope.launch(IO) {
+            MultiDeviceProtocol.syncConfigurationIfNeeded(this@HomeActivity)
+        }
     }
 
     private fun showKeyPairMigrationSheetIfNeeded() {
