@@ -27,6 +27,10 @@ import org.thoughtcrime.securesms.loki.views.PNModeView
 import org.session.libsession.utilities.TextSecurePreferences
 
 class PNModeActivity : BaseActionBarActivity() {
+    companion object {
+        const val REGISTRATION_SUCCESS = "PNModeActivity_REGISTRATION_SUCCESS"
+    }
+
     private var selectedOptionView: PNModeView? = null
 
     // region Lifecycle
@@ -156,6 +160,7 @@ class PNModeActivity : BaseActionBarActivity() {
         application.setUpStorageAPIIfNeeded()
         val intent = Intent(this, HomeActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        intent.putExtra(REGISTRATION_SUCCESS, true)
         show(intent)
     }
     // endregion

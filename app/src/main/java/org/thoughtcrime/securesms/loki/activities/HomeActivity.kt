@@ -44,6 +44,7 @@ import org.session.libsignal.utilities.ThreadUtils
 import org.session.libsignal.service.loki.utilities.toHexString
 import org.thoughtcrime.securesms.loki.dialogs.*
 import org.thoughtcrime.securesms.loki.protocol.ClosedGroupsProtocolV2
+import org.thoughtcrime.securesms.loki.protocol.MultiDeviceProtocol
 import java.io.IOException
 
 class HomeActivity : PassphraseRequiredActionBarActivity, ConversationClickListener, SeedReminderViewDelegate, NewConversationButtonSetViewDelegate {
@@ -149,6 +150,19 @@ class HomeActivity : PassphraseRequiredActionBarActivity, ConversationClickListe
         }
         this.broadcastReceiver = broadcastReceiver
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("blockedContactsChanged"))
+        if (intent.getBooleanExtra(PNModeActivity.REGISTRATION_SUCCESS, false)) {
+            // force the config sync here
+            MultiDeviceProtocol.forceSyncConfigurationNowIfNeeded(this)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent == null) return
+        if (intent.getBooleanExtra(PNModeActivity.REGISTRATION_SUCCESS, false)) {
+            // force the config sync here
+            MultiDeviceProtocol.forceSyncConfigurationNowIfNeeded(this)
+        }
     }
 
     override fun onResume() {
