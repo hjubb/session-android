@@ -165,6 +165,7 @@ public class ConversationItem extends LinearLayout
   private final AttachmentDownloadClickListener downloadClickListener       = new AttachmentDownloadClickListener();
   private final SlideClickPassthroughListener   singleDownloadClickListener = new SlideClickPassthroughListener(downloadClickListener);
   private final LinkPreviewClickListener        linkPreviewClickListener    = new LinkPreviewClickListener();
+  private final ContactPhotoClickListener       contactPhotoClickListener   = new ContactPhotoClickListener();
 
   private final Context context;
 
@@ -927,6 +928,7 @@ public class ConversationItem extends LinearLayout
     boolean isRSSFeed = threadName != null && (threadName.equals("Loki News") || threadName.equals("Session Updates"));
     if (isGroupThread && !isRSSFeed && !current.isOutgoing()) {
       contactPhotoHolder.setVisibility(VISIBLE);
+      contactPhotoHolder.setOnClickListener(contactPhotoClickListener);
 
       if (!previous.isPresent() || previous.get().isUpdate() || !current.getRecipient().getAddress().equals(previous.get().getRecipient().getAddress()) ||
           !DateUtils.isSameDay(previous.get().getTimestamp(), current.getTimestamp()))
@@ -956,6 +958,7 @@ public class ConversationItem extends LinearLayout
       groupSenderHolder.setVisibility(GONE);
 
       if (contactPhotoHolder != null) {
+        contactPhotoHolder.setOnClickListener(null);
         contactPhotoHolder.setVisibility(GONE);
         moderatorIconImageView.setVisibility(GONE);
       }
@@ -1165,6 +1168,16 @@ public class ConversationItem extends LinearLayout
           Toast.makeText(context, R.string.ConversationItem_unable_to_open_media, Toast.LENGTH_LONG).show();
         }
       }
+    }
+  }
+
+  private class ContactPhotoClickListener implements View.OnClickListener {
+
+    public 
+
+    @Override
+    public void onClick(View v) {
+
     }
   }
 
