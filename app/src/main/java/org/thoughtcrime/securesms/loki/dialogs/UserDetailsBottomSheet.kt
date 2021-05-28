@@ -4,20 +4,22 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.fragment_user_details_bottom_sheet.*
 import network.loki.messenger.R
+import org.session.libsession.messaging.MessagingModuleConfiguration
 import org.session.libsession.messaging.contacts.Contact
 import org.session.libsession.utilities.Address
 import org.session.libsession.utilities.recipients.Recipient
-import org.session.libsession.utilities.SSKEnvironment
+import org.thoughtcrime.securesms.conversation.ConversationActivity
 import org.thoughtcrime.securesms.database.DatabaseFactory
 import org.thoughtcrime.securesms.mms.GlideApp
 
@@ -68,6 +70,17 @@ class UserDetailsBottomSheet : BottomSheetDialogFragment() {
             val clip = ClipData.newPlainText("Session ID", publicKey)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(requireContext(), R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
+        }
+        messageButton.setOnClickListener {
+            val threadId = MessagingModuleConfiguration.shared.storage.getThreadId(recipient)
+            val intent = Intent(
+                context,
+                ConversationActivity::class.java
+            )
+            intent.putExtra(ConversationActivity.ADDRESS_EXTRA, recipient.address)
+            intent.putExtra(ConversationActivity.THREAD_ID_EXTRA, threadId ?: -1)
+            startActivity(intent)
+            dismiss()
         }
     }
 

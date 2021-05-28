@@ -3,15 +3,13 @@ package org.thoughtcrime.securesms;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-
-import org.thoughtcrime.securesms.database.model.MessageRecord;
-import org.thoughtcrime.securesms.database.model.MmsMessageRecord;
-import org.thoughtcrime.securesms.mms.GlideRequests;
-import org.session.libsignal.utilities.guava.Optional;
-
 import org.session.libsession.messaging.sending_receiving.link_preview.LinkPreview;
 import org.session.libsession.utilities.Address;
 import org.session.libsession.utilities.recipients.Recipient;
+import org.session.libsignal.utilities.guava.Optional;
+import org.thoughtcrime.securesms.database.model.MessageRecord;
+import org.thoughtcrime.securesms.database.model.MmsMessageRecord;
+import org.thoughtcrime.securesms.mms.GlideRequests;
 
 import java.util.Locale;
 import java.util.Set;
@@ -35,5 +33,6 @@ public interface BindableConversationItem extends Unbindable {
     void onQuoteClicked(MmsMessageRecord messageRecord);
     void onLinkPreviewClicked(@NonNull LinkPreview linkPreview);
     void onMoreTextClicked(@NonNull Address conversationAddress, long messageId, boolean isMms);
+    void onContactClicked(Recipient recipient);
   }
 }

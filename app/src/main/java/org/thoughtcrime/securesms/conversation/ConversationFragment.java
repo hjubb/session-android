@@ -54,7 +54,9 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
+
 import com.annimon.stream.Stream;
+
 import org.session.libsession.messaging.MessagingModuleConfiguration;
 import org.session.libsession.messaging.messages.control.DataExtractionNotification;
 import org.session.libsession.messaging.messages.signal.OutgoingMediaMessage;
@@ -67,14 +69,14 @@ import org.session.libsession.messaging.sending_receiving.MessageSender;
 import org.session.libsession.messaging.sending_receiving.attachments.Attachment;
 import org.session.libsession.messaging.sending_receiving.link_preview.LinkPreview;
 import org.session.libsession.utilities.Address;
-import org.session.libsession.utilities.recipients.Recipient;
 import org.session.libsession.utilities.TextSecurePreferences;
 import org.session.libsession.utilities.Util;
 import org.session.libsession.utilities.ViewUtil;
 import org.session.libsession.utilities.concurrent.SimpleTask;
+import org.session.libsession.utilities.recipients.Recipient;
 import org.session.libsession.utilities.task.ProgressDialogAsyncTask;
-import org.session.libsignal.utilities.guava.Optional;
 import org.session.libsignal.utilities.Log;
+import org.session.libsignal.utilities.guava.Optional;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.MessageDetailsActivity;
 import org.thoughtcrime.securesms.PassphraseRequiredActionBarActivity;
@@ -89,6 +91,7 @@ import org.thoughtcrime.securesms.database.loaders.ConversationLoader;
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord;
+import org.thoughtcrime.securesms.loki.dialogs.UserDetailsBottomSheet;
 import org.thoughtcrime.securesms.longmessage.LongMessageActivity;
 import org.thoughtcrime.securesms.mediasend.Media;
 import org.thoughtcrime.securesms.mms.GlideApp;
@@ -1065,6 +1068,17 @@ public class ConversationFragment extends Fragment
           }
         }
       }
+    }
+
+    @Override
+    public void onContactClicked(Recipient recipient) {
+      if (recipient == null) return;
+
+      UserDetailsBottomSheet userDetailsBottomSheet = new UserDetailsBottomSheet();
+      Bundle bundle = new Bundle();
+      bundle.putString("publicKey", recipient.getAddress().serialize());
+      userDetailsBottomSheet.setArguments(bundle);
+      userDetailsBottomSheet.show(getParentFragmentManager(), userDetailsBottomSheet.getTag());
     }
 
     @Override
