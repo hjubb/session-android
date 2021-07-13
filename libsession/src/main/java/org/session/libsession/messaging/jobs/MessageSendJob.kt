@@ -76,7 +76,9 @@ class MessageSendJob(val message: Message, val destination: Destination) : Job {
                     && exception.statusCode == 429) {
                 this.handlePermanentFailure(exception)
             } else {
-                this.handleFailure(exception)
+                if (exception is OnionRequestAPI.HTTPRequestFailedAtDestinationException && exception.statusCode == 429) {
+                this.handlePermanentFailure(exception)
+            }this.handleFailure(exception)
             }
         }
         try {
